@@ -1,0 +1,102 @@
+# CRITICAL: Firebase sensitive files - NEVER COMMIT
+firebase/serviceAccountKey.json
+
+# CRITICAL: Environment variables - NEVER COMMIT
+.env
+backend/.env
+frontend/.env
+
+# Python cache and compiled files
+__pycache__/
+backend/__pycache__/
+frontend/__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments - NEVER COMMIT
+venv/
+backend/venv/
+frontend/venv/
+env/
+.venv/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+
+# Operating system files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+logs/
+
+# Streamlit specific
+.streamlit/
+.streamlit/secrets.toml
+
+# Firebase cache and debug
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Additional Python files
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/_build/
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
