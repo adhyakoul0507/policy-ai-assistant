@@ -5,18 +5,15 @@ import pandas as pd
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
-import pyrebase
-from firebase_config import firebase_config
+
+
 import time
 import os
 from dotenv import load_dotenv
-
+from firebase_config import firebase_config, auth, database
 load_dotenv()
 
 
-firebase = pyrebase.initialize_app(firebase_config)
-auth = firebase.auth()
-database = firebase.database()
 
 
 st.set_page_config(
