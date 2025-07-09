@@ -5,16 +5,12 @@ import pandas as pd
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
-
-
+from firebase_config import firebase_config, auth, database
 import time
 import os
 from dotenv import load_dotenv
-from firebase_config import firebase_config, auth, database
+
 load_dotenv()
-
-
-
 
 st.set_page_config(
     page_title="Policy Chatbot",
@@ -23,9 +19,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 API_BASE_URL = os.getenv('API_BASE_URL', "http://localhost:5000")
-
 
 st.markdown("""
 <style>
@@ -164,14 +158,14 @@ def auth_section():
                         try:
                             with st.spinner("Logging in..."):
                                 user = auth.sign_in_with_email_and_password(email, password)
-                                st.session_state.user = user
+                                st.session_state.user = {"idToken": user["idToken"], "localId": user["localId"]}
                                 st.session_state.user_email = email
                                 st.success("Login successful!")
                                 time.sleep(1)
                                 st.rerun()
                         except Exception as e:
                             error_message = str(e)
-                            if "INVALID_LOGIN_CREDENTIALS" in error_message:
+                            if "INVALID_LOGIN_CREDENTIALS" in error_message or "INVALID_PASSWORD" in error_message:
                                 st.error("Invalid email or password")
                             else:
                                 st.error(f"Login failed: {error_message}")
@@ -259,17 +253,14 @@ def display_user_info():
 def main():
     """Main application function"""
     
-    
     display_user_info()
     
-   
     st.markdown("""
     <div class="main-header">
         <h1>Policy Chatbot</h1>
         <p>Analyze, Compare, and Understand Government Policies</p>
     </div>
     """, unsafe_allow_html=True)
-    
     
     st.sidebar.title("Choose a Feature")
     
@@ -284,14 +275,12 @@ def main():
         ]
     )
     
-   
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Language Settings**")
     language_preference = st.sidebar.selectbox(
         "Preferred Language",
         ["English", "Hindi", "Punjabi"]
     )
-    
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Location Settings**")
@@ -305,7 +294,6 @@ def main():
         ]
     )
     
-   
     st.sidebar.markdown("---")
     if st.sidebar.button("Logout", use_container_width=True):
         st.session_state.user = None
@@ -313,7 +301,6 @@ def main():
         st.success("Logged out successfully!")
         time.sleep(1)
         st.rerun()
-    
     
     if feature == "Policy Comparison":
         policy_comparison()
@@ -330,7 +317,6 @@ def policy_comparison():
     """Policy comparison feature"""
     st.header("Policy vs Policy Comparison")
     
-    
     if 'policy1' not in st.session_state:
         st.session_state.policy1 = ""
     if 'policy2' not in st.session_state:
@@ -340,7 +326,6 @@ def policy_comparison():
     
     with col1:
         st.subheader("Policy 1")
-        
         
         st.write("**Popular Policies:**")
         if st.button("MNREGA", key="mnrega1"):
@@ -356,7 +341,6 @@ def policy_comparison():
     with col2:
         st.subheader("Policy 2")
         
-      
         st.write("**Popular Policies:**")
         if st.button("Jan Aushadhi Yojana", key="jan_aushadhi2"):
             st.session_state.policy2 = "Jan Aushadhi Yojana"
@@ -379,12 +363,10 @@ def policy_comparison():
                 if result.get("success"):
                     st.success("Analysis Complete!")
                     
-                    
                     st.sidebar.markdown("---")
                     st.sidebar.markdown("**Analysis Info**")
                     st.sidebar.write(f"Language: {result.get('language', 'N/A')}")
                     st.sidebar.write(f"Timestamp: {result.get('timestamp', 'N/A')}")
-                    
                     
                     st.subheader("Policy Comparison Dashboard")
                     col1, col2, col3 = st.columns(3)
@@ -395,7 +377,6 @@ def policy_comparison():
                         st.metric("Analysis Depth", "Advanced", "")
                     with col3:
                         st.metric("Comparison Score", "85%", "5%")
-                    
                     
                     comparison_data = {
                         'Aspect': ['Implementation', 'Budget', 'Coverage', 'Impact', 'Sustainability'],
@@ -413,7 +394,6 @@ def policy_comparison():
                     
                     st.plotly_chart(fig, use_container_width=True)
                     
-                    
                     st.markdown("---")
                     st.subheader("Detailed Analysis")
                     st.markdown(result["comparison"])
@@ -426,10 +406,8 @@ def sentiment_analysis():
     """Sentiment analysis feature"""
     st.header("Sentiment & Stakeholder Analysis")
     
-    
     if 'sentiment_policy' not in st.session_state:
         st.session_state.sentiment_policy = ""
-    
     
     st.write("**Quick Select:**")
     col1, col2, col3 = st.columns(3)
@@ -457,7 +435,6 @@ def sentiment_analysis():
                 if result.get("success"):
                     st.success("Analysis Complete!")
                     
-                    
                     st.subheader("Sentiment Analysis Dashboard")
                     col1, col2, col3, col4 = st.columns(4)
                     
@@ -469,7 +446,6 @@ def sentiment_analysis():
                         st.metric("Analysis Confidence", "92%", "3%")
                     with col4:
                         st.metric("Public Support", "68%", "8%")
-                    
                     
                     sentiment_data = {
                         'Stakeholder': ['Citizens', 'Media', 'NGOs', 'Politicians'],
@@ -486,7 +462,6 @@ def sentiment_analysis():
                     )
                     
                     st.plotly_chart(fig, use_container_width=True)
-                    
                     
                     st.markdown("---")
                     st.subheader("Detailed Analysis")
@@ -521,7 +496,6 @@ def eligibility_checker():
             "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh"
         ])
         
-        
         family_size = st.number_input("Family Size", min_value=1, max_value=20, value=4)
     
     if st.button("Check Eligibility", type="primary"):
@@ -539,7 +513,6 @@ def eligibility_checker():
             if result.get("success"):
                 st.success("Eligibility Check Complete!")
                 
-                
                 st.subheader("Eligibility Dashboard")
                 col1, col2, col3, col4 = st.columns(4)
                 
@@ -552,11 +525,9 @@ def eligibility_checker():
                 with col4:
                     st.metric("Processing Time", "2.3s", "-0.5s")
                 
-                
                 eligible_schemes = result.get("eligible_schemes", [])
                 
                 if eligible_schemes:
-                    
                     scheme_names = [scheme['name'] for scheme in eligible_schemes]
                     scheme_count = len(scheme_names)
                     
@@ -576,7 +547,6 @@ def eligibility_checker():
                             st.write(f"**Benefits:** {scheme['benefits']}")
                             st.write(f"**Application:** {scheme['application']}")
                             st.write("**Criteria:** " + ", ".join([f"{k}: {v}" for k, v in scheme['criteria'].items()]))
-                    
                     
                     st.markdown("---")
                     st.subheader("Detailed Analysis")
@@ -600,7 +570,6 @@ def regional_policies(state):
             if result.get("success"):
                 st.success("Regional Information Retrieved!")
                 
-                
                 st.subheader("State Statistics Dashboard")
                 col1, col2, col3 = st.columns(3)
                 
@@ -610,7 +579,6 @@ def regional_policies(state):
                     st.metric("GDP Growth", "7.2%", "0.8%")
                 with col3:
                     st.metric("Schemes Active", "45", "3")
-                
                 
                 budget_data = {
                     'Department': ['Education', 'Health', 'Agriculture', 'Infrastructure', 'Social Welfare'],
@@ -628,7 +596,6 @@ def regional_policies(state):
                 
                 st.plotly_chart(fig, use_container_width=True)
                 
-                
                 st.markdown("---")
                 st.subheader("Regional Policy Details")
                 st.markdown(result["regional_info"])
@@ -640,10 +607,8 @@ def general_query(language_preference):
     """General query feature"""
     st.header("General Policy Query")
     
-    
     if 'query_text' not in st.session_state:
         st.session_state.query_text = ""
-    
     
     st.write("**Popular Questions:**")
     
@@ -681,7 +646,6 @@ def general_query(language_preference):
                 if result.get("success"):
                     st.success("Answer Retrieved!")
                     
-                    
                     st.subheader("Query Analysis Dashboard")
                     col1, col2, col3, col4 = st.columns(4)
                     
@@ -694,17 +658,14 @@ def general_query(language_preference):
                     with col4:
                         st.metric("Response Time", "1.2s", "-0.3s")
                     
-                    
                     st.sidebar.markdown("---")
                     st.sidebar.markdown("**Query Info**")
                     st.sidebar.write(f"Language: {result.get('language', 'N/A')}")
                     st.sidebar.write(f"Timestamp: {result.get('timestamp', 'N/A')}")
                     
-                    
                     st.markdown("---")
                     st.subheader("Detailed Answer")
                     st.markdown(result["answer"])
-                    
                     
                     st.markdown("---")
                     st.subheader("Related Topics")
@@ -717,7 +678,6 @@ def general_query(language_preference):
                     st.error(f"Error: {result.get('error', 'Unknown error')}")
         else:
             st.warning("Please enter a question")
-
 
 def show_footer():
     st.markdown("---")
