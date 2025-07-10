@@ -315,7 +315,15 @@ def make_api_request(endpoint, data):
         else:
             return {"success": False, "error": f"API Error: {response.status_code}"}
     except requests.exceptions.RequestException as e:
-        return {"success": False, "error": f"Connection Error: {str(e)}"}
+        error_message = str(e).lower()
+        if "quota" in error_message or "rate limit" in error_message or "429" in error_message:
+            return {"success": False, "error": "API quota exceeded. Please try again later or upgrade your plan."}
+        elif "timeout" in error_message:
+            return {"success": False, "error": "Request timeout. The API is taking too long to respond."}
+        elif "connection" in error_message:
+            return {"success": False, "error": "Connection error. Please check your internet connection."}
+        else:
+            return {"success": False, "error": f"Connection Error: {str(e)}"}
 
 def display_user_info():
     """Display user information in sidebar with session info"""
@@ -619,32 +627,39 @@ def general_query(language_preference):
                         height=100, key="query_input")
     st.session_state.query_text = query
     
-    if st.button("Get Answer", type="primary"):
-        if query:
-            with st.spinner("Searching for answer..."):
-                result = make_api_request("general-query", {
-                    "query": query,
-                    "language": language_preference
-                })
-                
-                if result.get("success"):
-                    st.success("Answer Retrieved!")
+    col_btn1, col_btn2 = st.columns(2)
+    
+    with col_btn1:
+        if st.button("Get Answer", type="primary"):
+            if query:
+                with st.spinner("Searching for answer..."):
+                    result = make_api_request("general-query", {
+                        "query": query,
+                        "language": language_preference
+                    })
                     
-                    st.markdown("---")
-                    st.subheader("Answer")
-                    st.markdown(result["answer"])
-                    
-                    st.markdown("---")
-                    st.subheader("Related Topics")
-                    st.write("• Government Schemes Portal")
-                    st.write("• Policy Implementation Guidelines")
-                    st.write("• Budget Allocation Reports")
-                    st.write("• Ministry Contact Information")
-                    
-                else:
-                    st.error(f"Error: {result.get('error', 'Unknown error')}")
-        else:
-            st.warning("Please enter a question")
+                    if result.get("success"):
+                        st.success("Answer Retrieved!")
+                        
+                        st.markdown("---")
+                        st.subheader("Answer")
+                        st.markdown(result["answer"])
+                        
+                        st.markdown("---")
+                        st.subheader("Related Topics")
+                        st.write("• Government Schemes Portal")
+                        st.write("• Policy Implementation Guidelines")
+                        st.write("• Budget Allocation Reports")
+                        st.write("• Ministry Contact Information")
+                        
+                    else:
+                        st.error(f"Error: {result.get('error', 'Unknown error')}")
+            else:
+                st.warning("Please enter a question")
+    
+    with col_btn2:
+        if st.button("Test Quota Error"):
+            st.error("API quota exceeded. Please try again later or upgrade your plan.")
 
 def show_footer():
     st.markdown("---")
