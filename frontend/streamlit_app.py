@@ -561,40 +561,15 @@ def eligibility_checker():
 
 def regional_policies(state):
     """Regional policies feature"""
-    st.header(f"Regional Policies - {state}")
     
-    if st.button(f"Get Policies for {state}", type="primary"):
-        with st.spinner(f"Fetching policies for {state}..."):
-            result = make_api_request("regional-policies", {"state": state})
             
             if result.get("success"):
                 st.success("Regional Information Retrieved!")
                 
-                st.subheader("State Statistics Dashboard")
-                col1, col2, col3 = st.columns(3)
+        
                 
-                with col1:
-                    st.metric("Population", "35M", "2.1%")
-                with col2:
-                    st.metric("GDP Growth", "7.2%", "0.8%")
-                with col3:
-                    st.metric("Schemes Active", "45", "3")
                 
-                budget_data = {
-                    'Department': ['Education', 'Health', 'Agriculture', 'Infrastructure', 'Social Welfare'],
-                    'Allocation': [2500, 2000, 1800, 3000, 1200]
-                }
                 
-                fig = px.bar(
-                    budget_data,
-                    x='Department',
-                    y='Allocation',
-                    title=f"Budget Allocation - {state} (₹ Crore)",
-                    color='Allocation',
-                    color_continuous_scale='viridis'
-                )
-                
-                st.plotly_chart(fig, use_container_width=True)
                 
                 st.markdown("---")
                 st.subheader("Regional Policy Details")
