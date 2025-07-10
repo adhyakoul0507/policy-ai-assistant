@@ -296,7 +296,7 @@ def regional_policies():
         
         prompt = f"""
         Provide comprehensive information about government policies specific to {state}, India.
-        
+        Be careful to use only factual and up-to-date information. Do not assume or exaggerate statistics such as population or budget. If exact values are not known, say "data not available".
         Include:
         1. State-specific government schemes and policies
         2. Budget allocation and spending priorities
@@ -311,6 +311,8 @@ def regional_policies():
         
         Format the response with clear sections and practical information.
         """
+
+        
         
         regional_info = generate_with_gemini(prompt)
         
