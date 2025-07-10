@@ -177,7 +177,6 @@ def auth_section():
     </div>
     """, unsafe_allow_html=True)
 
-    # Demo mode banner
     st.markdown("""
     <div class="demo-banner">
         <h4>Quick Demo Mode Available</h4>
@@ -185,10 +184,9 @@ def auth_section():
     </div>
     """, unsafe_allow_html=True)
 
-    # Demo mode button
     col_demo1, col_demo2, col_demo3 = st.columns([1, 2, 1])
     with col_demo2:
-        if st.button(" Enter Demo Mode (Skip Login)", type="primary", use_container_width=True):
+        if st.button("Enter Demo Mode (Skip Login)", type="primary", use_container_width=True):
             st.session_state.user = {
                 "idToken": "demo_token", 
                 "localId": "demo_user",
@@ -197,7 +195,7 @@ def auth_section():
             st.session_state.user_email = "demo@policychatbot.com"
             st.session_state.user_authenticated = True
             st.session_state.login_timestamp = datetime.now()
-            st.success(" Demo mode activated! Exploring Policy Chatbot features...")
+            st.success("Demo mode activated")
             time.sleep(1)
             st.rerun()
 
@@ -457,39 +455,8 @@ def policy_comparison():
                 if result.get("success"):
                     st.success("Analysis Complete!")
                     
-                    st.sidebar.markdown("---")
-                    st.sidebar.markdown("**Analysis Info**")
-                    st.sidebar.write(f"Language: {result.get('language', 'N/A')}")
-                    st.sidebar.write(f"Timestamp: {result.get('timestamp', 'N/A')}")
-                    
-                    st.subheader("Policy Comparison Dashboard")
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
-                        st.metric("Policies Compared", "2", "0")
-                    with col2:
-                        st.metric("Analysis Depth", "Advanced", "")
-                    with col3:
-                        st.metric("Comparison Score", "85%", "5%")
-                    
-                    comparison_data = {
-                        'Aspect': ['Implementation', 'Budget', 'Coverage', 'Impact', 'Sustainability'],
-                        policy1: [75, 80, 90, 85, 70],
-                        policy2: [85, 70, 75, 80, 85]
-                    }
-                    
-                    fig = px.bar(
-                        comparison_data,
-                        x='Aspect',
-                        y=[policy1, policy2],
-                        title=f"Policy Comparison Overview: {policy1} vs {policy2}",
-                        color_discrete_map={policy1: '#4ECDC4', policy2: '#FF6B6B'}
-                    )
-                    
-                    st.plotly_chart(fig, use_container_width=True)
-                    
                     st.markdown("---")
-                    st.subheader("Detailed Analysis")
+                    st.subheader("Policy Comparison Analysis")
                     st.markdown(result["comparison"])
                 else:
                     st.error(f"Error: {result.get('error', 'Unknown error')}")
@@ -529,36 +496,8 @@ def sentiment_analysis():
                 if result.get("success"):
                     st.success("Analysis Complete!")
                     
-                    st.subheader("Sentiment Analysis Dashboard")
-                    col1, col2, col3, col4 = st.columns(4)
-                    
-                    with col1:
-                        st.metric("Overall Sentiment", "Positive", "12%")
-                    with col2:
-                        st.metric("Stakeholder Groups", "4", "0")
-                    with col3:
-                        st.metric("Analysis Confidence", "92%", "3%")
-                    with col4:
-                        st.metric("Public Support", "68%", "8%")
-                    
-                    sentiment_data = {
-                        'Stakeholder': ['Citizens', 'Media', 'NGOs', 'Politicians'],
-                        'Positive': [70, 60, 65, 45],
-                        'Negative': [30, 40, 35, 55]
-                    }
-                    
-                    fig = px.bar(
-                        sentiment_data,
-                        x='Stakeholder',
-                        y=['Positive', 'Negative'],
-                        title=f"Sentiment Analysis: {policy_name}",
-                        color_discrete_map={'Positive': '#4ECDC4', 'Negative': '#FF6B6B'}
-                    )
-                    
-                    st.plotly_chart(fig, use_container_width=True)
-                    
                     st.markdown("---")
-                    st.subheader("Detailed Analysis")
+                    st.subheader("Sentiment Analysis Results")
                     st.markdown(result["analysis"])
                 else:
                     st.error(f"Error: {result.get('error', 'Unknown error')}")
@@ -607,32 +546,9 @@ def eligibility_checker():
             if result.get("success"):
                 st.success("Eligibility Check Complete!")
                 
-                st.subheader("Eligibility Dashboard")
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric("Schemes Checked", "25", "0")
-                with col2:
-                    st.metric("Eligible Schemes", str(len(result.get("eligible_schemes", []))), "2")
-                with col3:
-                    st.metric("Match Score", "87%", "5%")
-                with col4:
-                    st.metric("Processing Time", "2.3s", "-0.5s")
-                
                 eligible_schemes = result.get("eligible_schemes", [])
                 
                 if eligible_schemes:
-                    scheme_names = [scheme['name'] for scheme in eligible_schemes]
-                    scheme_count = len(scheme_names)
-                    
-                    if scheme_count > 0:
-                        fig = px.pie(
-                            values=[1] * scheme_count,
-                            names=scheme_names,
-                            title="Eligible Schemes Distribution"
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                    
                     st.markdown("---")
                     st.subheader("You are eligible for:")
                     
@@ -714,25 +630,8 @@ def general_query(language_preference):
                 if result.get("success"):
                     st.success("Answer Retrieved!")
                     
-                    st.subheader("Query Analysis Dashboard")
-                    col1, col2, col3, col4 = st.columns(4)
-                    
-                    with col1:
-                        st.metric("Query Type", "Policy", "")
-                    with col2:
-                        st.metric("Confidence", "94%", "2%")
-                    with col3:
-                        st.metric("Sources", "8", "1")
-                    with col4:
-                        st.metric("Response Time", "1.2s", "-0.3s")
-                    
-                    st.sidebar.markdown("---")
-                    st.sidebar.markdown("**Query Info**")
-                    st.sidebar.write(f"Language: {result.get('language', 'N/A')}")
-                    st.sidebar.write(f"Timestamp: {result.get('timestamp', 'N/A')}")
-                    
                     st.markdown("---")
-                    st.subheader("Detailed Answer")
+                    st.subheader("Answer")
                     st.markdown(result["answer"])
                     
                     st.markdown("---")
@@ -752,7 +651,7 @@ def show_footer():
     st.markdown("""
     <div style="text-align: center; color: #666; margin-top: 2rem;">
         <p><strong>Policy Chatbot</strong> | Built with Streamlit & Flask | Powered by Google Gemini</p>
-        <p>Firebase +  Google IDX +  Render</p>
+        <p>Firebase + Google IDX + Render</p>
     </div>
     """, unsafe_allow_html=True)
 
