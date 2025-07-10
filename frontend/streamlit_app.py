@@ -561,22 +561,22 @@ def eligibility_checker():
 
 def regional_policies(state):
     """Regional policies feature"""
+    st.header(f"Regional Policy Insights: {state}")
     
-            
-            if result.get("success"):
-                st.success("Regional Information Retrieved!")
-                
-        
-                
-                
-                
-                
-                st.markdown("---")
-                st.subheader("Regional Policy Details")
-                st.markdown(result["regional_info"])
-                
-            else:
-                st.error(f"Error: {result.get('error', 'Unknown error')}")
+    with st.spinner("Fetching regional policy details..."):
+        result = make_api_request("regional-policies", {
+            "state": state
+        })
+
+        if result.get("success"):
+            st.success("Regional Information Retrieved!")
+
+            st.markdown("---")
+            st.subheader("Regional Policy Details")
+            st.markdown(result["regional_info"])
+        else:
+            st.error(f"Error: {result.get('error', 'Unknown error')}")
+
 
 def general_query(language_preference):
     """General query feature"""
