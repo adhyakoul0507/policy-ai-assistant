@@ -180,7 +180,7 @@ def auth_section():
     # Demo mode banner
     st.markdown("""
     <div class="demo-banner">
-        <h4>🚀 Quick Demo Mode Available</h4>
+        <h4>Quick Demo Mode Available</h4>
         <p>For demonstration purposes, you can skip authentication and explore the features</p>
     </div>
     """, unsafe_allow_html=True)
@@ -188,7 +188,7 @@ def auth_section():
     # Demo mode button
     col_demo1, col_demo2, col_demo3 = st.columns([1, 2, 1])
     with col_demo2:
-        if st.button("🎯 Enter Demo Mode (Skip Login)", type="primary", use_container_width=True):
+        if st.button(" Enter Demo Mode (Skip Login)", type="primary", use_container_width=True):
             st.session_state.user = {
                 "idToken": "demo_token", 
                 "localId": "demo_user",
@@ -197,7 +197,7 @@ def auth_section():
             st.session_state.user_email = "demo@policychatbot.com"
             st.session_state.user_authenticated = True
             st.session_state.login_timestamp = datetime.now()
-            st.success("🎉 Demo mode activated! Exploring Policy Chatbot features...")
+            st.success(" Demo mode activated! Exploring Policy Chatbot features...")
             time.sleep(1)
             st.rerun()
 
@@ -752,7 +752,7 @@ def show_footer():
     st.markdown("""
     <div style="text-align: center; color: #666; margin-top: 2rem;">
         <p><strong>Policy Chatbot</strong> | Built with Streamlit & Flask | Powered by Google Gemini</p>
-        <p>🔥 Firebase + 🛠️ Google IDX + ☁️ Render</p>
+        <p>Firebase +  Google IDX +  Render</p>
     </div>
     """, unsafe_allow_html=True)
 
