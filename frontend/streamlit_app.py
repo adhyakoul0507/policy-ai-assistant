@@ -12,6 +12,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Initialize session state for persistence
+if 'user_authenticated' not in st.session_state:
+    st.session_state.user_authenticated = False
+if 'user_data' not in st.session_state:
+    st.session_state.user_data = None
+if 'login_timestamp' not in st.session_state:
+    st.session_state.login_timestamp = None
+
 st.set_page_config(
     page_title="Policy Chatbot",
     page_icon="🏛️",
@@ -126,17 +134,74 @@ st.markdown("""
         color: #333;
         border-left: 4px solid #4ECDC4;
     }
+    .demo-banner {
+        background: #fff3cd;
+        color: #856404;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border: 1px solid #ffeaa7;
+        text-align: center;
+    }
 </style>
 """, unsafe_allow_html=True)
 
+def check_auth():
+    """Enhanced authentication check with session persistence"""
+    # Check for existing session
+    if st.session_state.user_authenticated and 'user' in st.session_state and st.session_state.user:
+        return True
+    
+    # Check if Firebase token is still valid
+    if 'user' in st.session_state and st.session_state.user:
+        try:
+            # Try to refresh the token
+            if 'refreshToken' in st.session_state.user:
+                refreshed_user = auth.refresh(st.session_state.user['refreshToken'])
+                st.session_state.user = refreshed_user
+                st.session_state.user_authenticated = True
+                return True
+        except:
+            # Token expired or invalid
+            st.session_state.user = None
+            st.session_state.user_authenticated = False
+    
+    return False
+
 def auth_section():
-    """Authentication section for login/signup"""
+    """Authentication section for login/signup with demo mode"""
     st.markdown("""
     <div class="main-header">
         <h1>Policy Chatbot</h1>
         <p>Your AI-powered Government Policy Assistant</p>
     </div>
     """, unsafe_allow_html=True)
+
+    # Demo mode banner
+    st.markdown("""
+    <div class="demo-banner">
+        <h4>🚀 Quick Demo Mode Available</h4>
+        <p>For demonstration purposes, you can skip authentication and explore the features</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Demo mode button
+    col_demo1, col_demo2, col_demo3 = st.columns([1, 2, 1])
+    with col_demo2:
+        if st.button("🎯 Enter Demo Mode (Skip Login)", type="primary", use_container_width=True):
+            st.session_state.user = {
+                "idToken": "demo_token", 
+                "localId": "demo_user",
+                "refreshToken": "demo_refresh"
+            }
+            st.session_state.user_email = "demo@policychatbot.com"
+            st.session_state.user_authenticated = True
+            st.session_state.login_timestamp = datetime.now()
+            st.success("🎉 Demo mode activated! Exploring Policy Chatbot features...")
+            time.sleep(1)
+            st.rerun()
+
+    st.markdown("---")
 
     col1, col2, col3 = st.columns([1, 2, 1])
     
@@ -151,6 +216,9 @@ def auth_section():
             email = st.text_input("Email", placeholder="Enter your email")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
             
+            # Remember me checkbox
+            remember_me = st.checkbox("Remember me for this session")
+            
             col_login1, col_login2 = st.columns(2)
             with col_login1:
                 if st.button("Login", type="primary", use_container_width=True):
@@ -158,8 +226,18 @@ def auth_section():
                         try:
                             with st.spinner("Logging in..."):
                                 user = auth.sign_in_with_email_and_password(email, password)
-                                st.session_state.user = {"idToken": user["idToken"], "localId": user["localId"]}
+                                st.session_state.user = {
+                                    "idToken": user["idToken"], 
+                                    "localId": user["localId"],
+                                    "refreshToken": user.get("refreshToken", "")
+                                }
                                 st.session_state.user_email = email
+                                st.session_state.user_authenticated = True
+                                st.session_state.login_timestamp = datetime.now()
+                                
+                                if remember_me:
+                                    st.session_state.remember_login = True
+                                
                                 st.success("Login successful!")
                                 time.sleep(1)
                                 st.rerun()
@@ -215,7 +293,7 @@ def auth_section():
 
 def get_auth_header():
     """Get authentication header for API requests"""
-    if 'user' in st.session_state and st.session_state.user:
+    if check_auth():
         return {
             'Authorization': f'Bearer {st.session_state.user["idToken"]}',
             'Content-Type': 'application/json'
@@ -232,8 +310,9 @@ def make_api_request(endpoint, data):
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 401:
-            st.error("Authentication required. Please login again.")
+            st.error("Session expired. Please login again.")
             st.session_state.user = None
+            st.session_state.user_authenticated = False
             st.rerun()
         else:
             return {"success": False, "error": f"API Error: {response.status_code}"}
@@ -241,17 +320,28 @@ def make_api_request(endpoint, data):
         return {"success": False, "error": f"Connection Error: {str(e)}"}
 
 def display_user_info():
-    """Display user information in sidebar"""
-    if 'user' in st.session_state and st.session_state.user:
+    """Display user information in sidebar with session info"""
+    if check_auth():
+        is_demo = st.session_state.user.get("idToken") == "demo_token"
+        user_type = "Demo User" if is_demo else "Authenticated User"
+        
         st.sidebar.markdown(f"""
         <div class="user-info">
             <p><strong>User:</strong> {st.session_state.get('user_email', 'Unknown')}</p>
+            <p><strong>Type:</strong> {user_type}</p>
             <p><strong>Session:</strong> Active</p>
+            {f"<p><strong>Login:</strong> {st.session_state.login_timestamp.strftime('%H:%M')}</p>" if st.session_state.login_timestamp else ""}
         </div>
         """, unsafe_allow_html=True)
 
 def main():
-    """Main application function"""
+    """Main application function with enhanced session management"""
+    
+    # Check authentication
+    if not check_auth():
+        st.session_state.user = None
+        st.session_state.user_authenticated = False
+        st.rerun()
     
     display_user_info()
     
@@ -298,6 +388,8 @@ def main():
     if st.sidebar.button("Logout", use_container_width=True):
         st.session_state.user = None
         st.session_state.user_email = None
+        st.session_state.user_authenticated = False
+        st.session_state.login_timestamp = None
         st.success("Logged out successfully!")
         time.sleep(1)
         st.rerun()
@@ -312,6 +404,8 @@ def main():
         regional_policies(state)
     elif feature == "General Query":
         general_query(language_preference)
+
+# [Keep all your existing functions: policy_comparison, sentiment_analysis, etc. - they remain exactly the same]
 
 def policy_comparison():
     """Policy comparison feature"""
@@ -577,7 +671,6 @@ def regional_policies(state):
         else:
             st.error(f"Error: {result.get('error', 'Unknown error')}")
 
-
 def general_query(language_preference):
     """General query feature"""
     st.header("General Policy Query")
@@ -659,11 +752,12 @@ def show_footer():
     st.markdown("""
     <div style="text-align: center; color: #666; margin-top: 2rem;">
         <p><strong>Policy Chatbot</strong> | Built with Streamlit & Flask | Powered by Google Gemini</p>
+        <p>🔥 Firebase + 🛠️ Google IDX + ☁️ Render</p>
     </div>
     """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    if 'user' not in st.session_state or st.session_state.user is None:
+    if not check_auth():
         auth_section()
     else:
         main()
