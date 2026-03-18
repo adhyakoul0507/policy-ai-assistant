@@ -177,11 +177,6 @@ Access comprehensive state-specific information including:
 * CORS configuration for secure API access
 * Input validation and sanitization
 
----
-
-## Screenshots
-
-*Add screenshots of your application here*
 
 ---
 
